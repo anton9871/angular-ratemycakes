@@ -1,0 +1,50 @@
+
+
+
+<h3>Submit a cake to be rated</h3>
+
+<form (submit)="addNewCake()">
+  <label for="newCake.baker_name">Baker name:</label>
+  <input type="text" name="newCake.baker_name" [(ngModel)]="newCake.baker_name">
+  <label for="newCake.img_url">Image URL:</label>
+  <input type="text" name="newCake.img_url" [(ngModel)]="newCake.img_url">
+  <input type="submit" value="SUBMIT">
+</form>
+
+<h3>List of Cakes:</h3>
+
+<div *ngIf="showCakes"> 
+  <div *ngFor="let i of allCakes['data']"> 
+    {{i.baker_name}} 
+    <img src={{i.img_url}} width="50"> 
+    <button (click)="deleteOneCake(i._id)" >Delete</button>
+    <button (click)="showUpdateForm(i)" >Update</button>
+
+    <form (submit)="addReview(formData, i._id)" #formData="ngForm">
+        <select name="review.rating" ngModel >
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <label for="">Comment: </label>
+        <input type="text" name="review.comment_content" ngModel>
+        <input type="submit" value="Rate!">
+      </form>
+
+    </div> 
+</div>
+
+  <div *ngIf="updateCakeForm">
+    <form (submit)="updateOneCake(updateCake)">
+        <label for="updateCake.baker_name">Baker name:</label>
+        <input type="text" name="updateCake.baker_name" [(ngModel)]="updateCake.baker_name">
+        <label for="updateCake.img_url">Image URL:</label>
+        <input type="text" name="updateCake.img_url" [(ngModel)]="updateCake.img_url">
+        <input type="submit" value="SUBMIT">
+    </form>
+  </div>
+
+ 
+

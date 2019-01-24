@@ -10,152 +10,116 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/ninja_gold', { useNewUrlParser: true });
+mongoose.connect('mongodb://localhost/rate_my_cakes', { useNewUrlParser: true });
 
-var GameSchema = new mongoose.Schema({
-    gold: { type: Number, default: 0, required: true },
-    activities: {type: [String] },
-    _id: {type: Number, required:true}
+var CommentSchema = new mongoose.Schema({ 
+    comment_content: { type: String, required: true },
+    rating: { type: Number, required: true }
 })
-const Game = mongoose.model('Game', GameSchema);
+const Comment = mongoose.model('Comment', CommentSchema);
 
-app.post('/start_game', function (req,res){
-    var game_instance = new Game ();
-    game_instance.gold = 0;
-    game_instance._id = 1;
-    game_instance.save(function(err){
-        if (err){
-            res.json({status: "Failure", error:err})
-        } else {
-            res.redirect('/');
+
+var CakeSchema = new mongoose.Schema({
+    baker_name: { type: String  , required: true },
+    img_url: {type: String, required: true },
+    comment: [CommentSchema] 
+})
+const Cake = mongoose.model('Cake', CakeSchema);
+
+
+//create
+app.post('/cake', function (req, res){
+    var cakeInstance = new Cake ( req.body );
+    console.log(req.body);
+    cakeInstance.save(function (err){
+        if (err) {
+            return res.json({status: "error creating document in DB", err: err});
+        }
+        else {
+            return res.json({status: "Success adding document to DB", cake: cakeInstance});
         }
     })
 })
 
 
-app.put('/process', function (req, res){
-
-    var building = req.body.building;
-    console.log("You selected this type: ", req.body.building);
-    
-    if (building == 'farm') {
-        let incrementer = Math.floor(Math.random() * (20 - 10)) + 10;;
-        Game.findByIdAndUpdate ({_id: 1}, {$inc: {gold: incrementer}}, function (err, data){
-            if (err) {
-                res.json({message: 'Error', err:err})
-            } else {
-                res.json( {message: 'Success', data: data} )
-                console.log("You received this amount of gold: ", incrementer);
-            }
-        })
-    }
-    else if (building == 'cave') {
-        let incrementer = Math.floor(Math.random() * (10 - 5)) + 5;;
-        Game.findByIdAndUpdate ({_id: 1}, {$inc: {gold: incrementer}}, function (err, data){
-            if (err) {
-                res.json({message: 'Error', err:err})
-            } else {
-                res.json( {message: 'Success', data:data} )
-                console.log("You received this amount of gold: ", incrementer);
-            }
-        })
-    }
-    else if (building == 'house') {
-        let incrementer = Math.floor(Math.random() * (5 - 2)) + 2;
-        Game.findByIdAndUpdate ({_id: 1}, {$inc: {gold: incrementer}}, function (err, data){
-            if (err) {
-                res.json({message: 'Error', err:err})
-            } else {
-                res.json( {message: 'Success', data:data} )
-                console.log("You received this amount of gold: ", incrementer);
-            }
-        })
-    } else  {
-        let incrementer = Math.floor(Math.random() * (100)) - 50;
-        Game.findByIdAndUpdate ({_id: 1}, {$inc: {gold: incrementer}}, function (err, data){
-            if (err) {
-                res.json({message: 'Error', err:err, data:data})
-            } else {
-                res.json( {message: 'Success'} )
-                console.log("You received this amount of gold: ", incrementer);
-            }
-        })
-    }
-})
-
-app.get('/get_gold', function (req, res) {
-    Game.find({_id:1}, function (err, data){
-        if (err){
-            res.json({status: 'Failure getting gold', err: err})
-        } else {
-            res.json({info:data[0].gold})
+//Retrieve
+app.get('/cakes', function (req, res) {
+    Cake.find({}, function (err, data){
+        if(err){
+            res.json({err:err});
+        }
+        else {
+            res.json({data: data});
         }
     })
 })
 
+//Retrieve specific id
+app.get('/cake/:id', function (req, res){
+    Cake.findById({_id: req.params.id}, function(err, data){
+        if(err){
+            res.json({err:err});
+        }
+        else {
+            console.log('task has been retrieved');
+            res.json({data: data});
+        }
+    })
 
-// //Retrieve
-// app.get('/tasks', function (req, res) {
-//     Task.find({}, function (err, data){
-//         if(err){
-//             return res.json({ status: "Error running query" , err:err});
-//         }
-//         else {
-//             return res.json({status: "Success running query", data: data});
-//         }
-//     })
-// })
+})
 
-// //Retrieve specific id
-// app.get('/task/:id', function (req, res){
-//     Task.findById({_id: req.params.id}, function(err, data){
-//         if(err){
-//             return res.json({status: "Error running query", err:err});
-//         }
-//         else {
-//             console.log('task has been retrieved');
-//             return res.json({status: "Success running query", data: data});
-//         }
-//     })
 
-// })
+//update
+app.put('/cake', function (req, res){
+    console.log(req.body);
+    Cake.findByIdAndUpdate(req.body._id, {$set: {baker_name: req.body.baker_name, img_url: req.body.img_url}}, function(err, data){
+        if(err){
+            console.log("document not found in db");
+            res.json({err: err});
+        }
+        else{
+            console.log("successfully updated");
+            console.log(data);
+            res.json({data:data})
+        }
+    })
+})
 
-// //create
-// app.post('/task', function (req, res){
-//     var taskInstance = new Task ( req.body );
-//     console.log(req.body);
-//     taskInstance.save(function (err){
-//         if (err) {
-//             return res.json({status: "error creating document in DB", err: err});
-//         }
-//         else {
-//             return res.json({status: "Success adding document to DB", task: taskInstance});
-//         }
-//     })
-// })
+//delete
+app.delete('/cake/:id', function (req, res){
+    Cake.findOneAndDelete({_id:req.params.id}, function (err){
+        if(err){
+            res.json({err:err});
+        } else {
+            res.json({status: "Success deleting the object"});
+        }
+    })
+})
 
-// //update
-// app.put('/task/:id', function (req, res){
-//     Task.findByIdAndUpdate({_id:req.params.id}, {$set: {title: req.body.title}}, function(err, data){
-//         if(err){
-//             console.log("document not found in db");
-//             return res.json({err: err});
-//         }
-//         else{
-//             console.log("successfully updated");
-//             console.log(req.body.title);
-//             return res.json({data:data})
-//         }
-//     })
-// })
+//create a rating/comment and push it into the existing cake object
+app.post('/cake/rating/:id', function (req, res) {
+    var commentInstance = new Comment ( req.body );
+    console.log("This is the body", req.body);
+    commentInstance.save(function (err){
+        if (err) {
+            res.json({status: "error creating document in DB", err: err});
+        }
+        else {
+            res.json({status: "Success adding document to DB", comment: commentInstance});
+            Cake.findOneAndUpdate(req.params.id, {$push: {comment:{comment_content: commentInstance.comment_content, rating: commentInstance.rating}}}, function(err, data){
+                if(err){
+                    console.log("document not found in db");
+                    res.json({err: err});
+                }
+                else{
+                    console.log("successfully updated", data);
+                }
+            })
+        }
+    })
 
-// //delete
-// app.delete('/task/:id', function (req, res){
-//     Task.findOneAndDelete({_id:req.params.id});
-//     return res.json({data: "Success deleting the object"});
+})
 
-// })
-
-app.listen(9000, function () {
+app.listen(8000, function () {
     console.log("listening on port 8000");
 })
