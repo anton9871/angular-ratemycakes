@@ -1,0 +1,5 @@
+<h4>Baked by {{cakeToShow.baker_name}}</h4>
+<p>Average Rating: {{average}}</p>
+<img src={{cakeToShow.img_url}} width="50">
+<p>Ratings:</p>
+<p *ngFor="let i of cakeToShow.comment">{{i['rating']}}&nbsp; Stars | {{i['comment_content']}}</p>

@@ -27,4 +27,7 @@ export class HttpService {
   addSingleReview(form_object, id){
     return this._http.post('/cake/rating/'+id, form_object)
   }
+  showSingleCakeComponent(id){
+    return this._http.get('/cake/'+id)
+  }
 }

@@ -17,6 +17,14 @@ export class AppComponent implements OnInit {
 
   review:any;
 
+  showDetails:boolean;
+
+  selectedCake:any;
+
+  counter:number;
+  sum:number;
+  average:number;
+
   constructor(private _httpService: HttpService){}
 
   ngOnInit(){
@@ -71,9 +79,20 @@ export class AppComponent implements OnInit {
       cakeid: formData.value['cakeid']
       }
     this._httpService.addSingleReview(formObject, id).subscribe( data => {
-      console.log('added a review!');
-      console.log(formData);
+      console.log('added a review!:');
       formData.reset();
     })
   }
+  cakeToShow(cake){
+
+
+    this.selectedCake = cake;
+    console.log(cake);
+      // avg_rating: this.average}; // store the cake in the variable so that it is bound and we can pass it to the child
+    // console.log(cake.comment);
+    
+
+    this.showDetails = !this.showDetails;
+  }
+  
 }
